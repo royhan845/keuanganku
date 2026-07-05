@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -6,8 +6,13 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "KeuanganKu",
+  title: "DuitKu",
   description: "Kelola keuangan Anda dengan aman",
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5", 
 };
 
 export default function RootLayout({
@@ -16,9 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // SuppressHydrationWarning diperlukan oleh next-themes di tag html
     <html lang="id" suppressHydrationWarning>
-      <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300`}>
+      <body suppressHydrationWarning className={`${inter.className} bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased transition-colors duration-300`}>
         <Providers>
           {children}
         </Providers>

@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, deleteDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, Unsubscribe, writeBatch } from 'firebase/firestore';
 import { db, customAppId } from '../config/firebase';
 
 export interface TransactionInput {
@@ -7,6 +7,8 @@ export interface TransactionInput {
   category: string;
   description: string;
   date: string;
+  status?: string;
+  dueDate?: string;
 }
 
 export interface Transaction extends TransactionInput {
@@ -23,11 +25,7 @@ export const transactionRepo = {
       data.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        
-        if (dateA !== dateB) {
-          return dateB - dateA;
-        } 
-        
+        if (dateA !== dateB) return dateB - dateA;
         return b.id.localeCompare(a.id);
       });
 
@@ -41,14 +39,39 @@ export const transactionRepo = {
       ...transactionData, 
       amount: typeof transactionData.amount === 'string' ? parseFloat(transactionData.amount) : transactionData.amount 
     };
-    
     const docRef = doc(db, 'artifacts', customAppId, 'users', userId, 'transactions', newId);
     await setDoc(docRef, newTx);
     return newTx;
   },
 
+  update: async (userId: string, transactionId: string, updateData: Partial<TransactionInput>) => {
+    const docRef = doc(db, 'artifacts', customAppId, 'users', userId, 'transactions', transactionId);
+    await updateDoc(docRef, updateData);
+  },
+
   delete: async (userId: string, transactionId: string) => {
     const docRef = doc(db, 'artifacts', customAppId, 'users', userId, 'transactions', transactionId);
     await deleteDoc(docRef);
+  },
+
+  restore: async (userId: string, backupData: any[]) => {
+    const batch = writeBatch(db);
+    
+    backupData.forEach(tx => {
+      const id = tx.id || Date.now().toString() + Math.floor(Math.random() * 1000);
+      const docRef = doc(db, 'artifacts', customAppId, 'users', userId, 'transactions', id);
+      
+      batch.set(docRef, {
+        type: tx.type,
+        amount: typeof tx.amount === 'string' ? parseFloat(tx.amount) : tx.amount,
+        category: tx.category || '',
+        description: tx.description || '',
+        date: tx.date,
+        status: tx.status || 'lunas',
+        dueDate: tx.dueDate || ''
+      });
+    });
+
+    await batch.commit();
   }
 };
