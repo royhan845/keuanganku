@@ -34,6 +34,14 @@ export default function Page() {
     setMounted(true);
   }, []);
 
+  // FUNGSI BARU: Untuk menjembatani Quick Action dari Dashboard ke Tab Navigation
+  const handleDashboardNavigate = (target: string) => {
+    if (target === 'transaction') setActiveTab('transactions');
+    else if (target === 'debt') setActiveTab('debts');
+    else if (target === 'report') setActiveTab('reports');
+    else setActiveTab(target);
+  };
+
   if (!isAuthReady) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 transition-colors">
@@ -83,7 +91,7 @@ export default function Page() {
           </header>
 
           <main className="max-w-2xl mx-auto px-4 py-6">
-            {activeTab === 'dashboard' && <DashboardView user={user} />}
+            {activeTab === 'dashboard' && <DashboardView user={user} onNavigate={handleDashboardNavigate} />}
             {activeTab === 'transactions' && <TransactionView user={user} showNotification={showNotification} />}
             {activeTab === 'debts' && <DebtView user={user} showNotification={showNotification} />}
             {activeTab === 'reports' && <ReportView user={user} showNotification={showNotification} />}
